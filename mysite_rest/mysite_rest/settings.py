@@ -38,7 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     
-    'resturantdata',
+    'resturantdata.apps.ResturantdataConfig',
     "corsheaders",
     'rest_framework'
 ]

@@ -1,43 +1,30 @@
-
-from django.http.response import HttpResponse
 from django.shortcuts import render
 from rest_framework.views import APIView
-
-
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 from resturantdata import models
-from resturantdata.serializers import ProductSerializers
+from resturantdata.serializers import ProductSerializers,UserSerializer,UserSerializerWithToken
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+#from resturantdata import Product, Review
+from resturantdata.serializers import ProductSerializers
 
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-   
-    def validate(self, attrs):
+from rest_framework import status
 
-        data= super().validate(attrs)
-        data["username"]=self.user.username
-        data["email"]=self.user.email
-
-
-        return data
-      
-        
-class MyTokenObtainPairView(TokenObtainPairView):
-    serializer_class = MyTokenObtainPairSerializer
-
-# Create your views here.
-
-def index(request):
-    return HttpResponse("Hello, world. You're at the Rest index.")
-    
 class GetProducts(APIView):
+    
+    permission_classes = [IsAdminUser]
     def get(self,request):
+        
         products=models.Products.objects.all()
         response=ProductSerializers(products,many=True)
         return Response(response.data)
-
+    #permission_classes = [IsAdminUser]
     def post(self,request):
+        
         product_requset=request.data
         product_data=ProductSerializers(data=product_requset)
         if product_data.is_valid():
@@ -46,14 +33,11 @@ class GetProducts(APIView):
                 'msg':"recived"
             })
         else:
+            print(product_data.errors)
             return Response({'error':'product_data.errors'})
 class getProduct(APIView):
-    def get(self,requset,id):
-        product=models.Products.objects.get(id=id)
+    def get(self,requset,pk):
+        product=models.Products.objects.get(id=pk)
         response=ProductSerializers(product,many=False)
         return Response(response.data)
         
-
-
-
-
